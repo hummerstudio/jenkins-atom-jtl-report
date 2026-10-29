@@ -1,0 +1,11 @@
+{
+  "name": "JMeter report",
+  "summary": "Turns a .jtl into latency percentiles and an error rate, per label and overall.",
+  "author": "hummerstudio",
+  "license": "MIT",
+  "tags": [
+    "official-port",
+    "jtl-report"
+  ],
+  "homepage": "https://github.com/hummerstudio/jenkins-atom-jtl-report"
+}

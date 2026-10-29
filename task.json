@@ -1,0 +1,73 @@
+{
+  "atomCode": "jtl-report",
+  "name": "JMeter report",
+  "version": "1.0.0",
+  "description": "Turns a .jtl into latency percentiles and an error rate, per label and overall.",
+  "execution": {
+    "packagePath": "jtl-report.jar",
+    "language": "java",
+    "target": "$atom_java_path -cp jtl-report.jar com.jenkinschina.atom.sdk.AtomRunner"
+  },
+  "input": {
+    "pattern": {
+      "label": "jtl 文件 glob",
+      "type": "vuex-input",
+      "default": "**/*.jtl"
+    },
+    "label": {
+      "label": "报告名称",
+      "type": "vuex-input",
+      "default": "Load test"
+    },
+    "outputDir": {
+      "label": "HTML 输出目录",
+      "type": "vuex-input",
+      "default": "out/jtl"
+    },
+    "maxErrorPercent": {
+      "label": "错误率上限（%，0 = 不检查）",
+      "type": "vuex-input",
+      "default": "0"
+    }
+  },
+  "output": {
+    "samples": {
+      "type": "string",
+      "description": "样本数"
+    },
+    "errors": {
+      "type": "string",
+      "description": "错误数"
+    },
+    "errorPercent": {
+      "type": "string",
+      "description": "错误率"
+    },
+    "avgMs": {
+      "type": "string",
+      "description": "平均耗时"
+    },
+    "p90Ms": {
+      "type": "string",
+      "description": "p90"
+    },
+    "p99Ms": {
+      "type": "string",
+      "description": "p99"
+    },
+    "maxMs": {
+      "type": "string",
+      "description": "最大耗时"
+    },
+    "report": {
+      "type": "report",
+      "description": "构建页内嵌报告"
+    }
+  },
+  "x-jenkins": {
+    "protocol": "jenkins-1",
+    "requires": {
+      "runner": ">=0.4.0"
+    }
+  }
+}
