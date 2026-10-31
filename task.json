@@ -1,7 +1,7 @@
 {
   "atomCode": "jtl-report",
   "name": "JMeter report",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Turns a .jtl into latency percentiles and an error rate, per label and overall.",
   "execution": {
     "packagePath": "jtl-report.jar",
@@ -26,6 +26,16 @@
     },
     "maxErrorPercent": {
       "label": "错误率上限（%，0 = 不检查）",
+      "type": "vuex-input",
+      "default": "0"
+    },
+    "maxP99Ms": {
+      "label": "p99 上限（毫秒，0 表示不卡）",
+      "type": "vuex-input",
+      "default": "0"
+    },
+    "maxAverageMs": {
+      "label": "平均响应上限（毫秒，0 表示不卡）",
       "type": "vuex-input",
       "default": "0"
     }

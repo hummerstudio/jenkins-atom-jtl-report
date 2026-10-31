@@ -45,4 +45,26 @@ dir="$(mktemp -d)"; printf '{}' >"$dir/input.json"
 run "$dir" >/dev/null 2>&1 && fail "no jtl must fail"
 grep -q "no .jtl file matched" "$dir/output.json" || fail "message not readable"
 
-echo "smoke ok: CSV stats, error-rate gate, XML flavour, no report"
+# 5. a latency budget: p99 over the limit fails, and the numbers still come out
+dir="$(mktemp -d)"
+{
+  echo "timeStamp,elapsed,label,success"
+  for i in $(seq 1 100); do echo "$((1700000000000 + i)),$((i * 10)),GET /jars,true"; done
+} >"$dir/run.jtl"
+printf '{"maxP99Ms": "500"}' >"$dir/input.json"
+run "$dir" >/dev/null 2>&1 && fail "p99 is 990 ms, a 500 ms budget must fail"
+grep -q "p99 is 990 ms, the limit is 500 ms" "$dir/output.json" || fail "p99 message: $(cat "$dir/output.json")"
+[ "$(output "$dir" p99Ms)" = "990" ] || fail "a breached gate must still export p99: $(cat "$dir/output.json")"
+[ "$(output "$dir" samples)" = "100" ] || fail "a breached gate must still export samples: $(cat "$dir/output.json")"
+[ -f "$dir/out/jtl/index.html" ] || fail "a breached gate must still write the report"
+
+# 6. the average budget, and a budget that is met
+dir="$(mktemp -d)"
+printf 'timeStamp,elapsed,label,success\n1,100,a,true\n2,300,a,true\n' >"$dir/run.jtl"
+printf '{"maxAverageMs": "100"}' >"$dir/input.json"
+run "$dir" >/dev/null 2>&1 && fail "the average is 200 ms, a 100 ms budget must fail"
+grep -q "the average is 200 ms, the limit is 100 ms" "$dir/output.json" || fail "average message: $(cat "$dir/output.json")"
+printf '{"maxAverageMs": "300", "maxP99Ms": "400", "maxErrorPercent": "5"}' >"$dir/input.json"
+run "$dir" >/dev/null 2>&1 || fail "a met budget must pass: $(cat "$dir/output.json")"
+
+echo "smoke ok: CSV stats, error-rate gate, XML flavour, no report, p99 and average budgets, met budget"

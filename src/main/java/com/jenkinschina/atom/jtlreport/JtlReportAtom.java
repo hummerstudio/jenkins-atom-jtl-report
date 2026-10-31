@@ -35,6 +35,8 @@ public class JtlReportAtom implements AtomTask {
         String label = context.getParam("label", "Load test");
         String outDir = context.getParam("outputDir", "out/jtl");
         double maxErrorPercent = parse(context.getParam("maxErrorPercent", "0"), 0);
+        double maxP99Ms = parse(context.getParam("maxP99Ms", "0"), 0);
+        double maxAverageMs = parse(context.getParam("maxAverageMs", "0"), 0);
 
         List<Path> files = find(workspace, pattern);
         if (files.isEmpty()) {
@@ -65,7 +67,25 @@ public class JtlReportAtom implements AtomTask {
                 stats.samples, stats.errors, errorPercent, stats.mean(), stats.percentile(90), stats.percentile(99),
                 stats.max));
 
-        AtomResult result = AtomResult.success()
+        // every number goes out either way: a breached gate should still leave the figures in the build
+        List<String> breaches = new ArrayList<>();
+        if (maxErrorPercent > 0 && errorPercent > maxErrorPercent) {
+            breaches.add(String.format(Locale.ROOT, "%.2f%% of the samples failed, the limit is %.2f%%",
+                    errorPercent, maxErrorPercent));
+        }
+        if (maxP99Ms > 0 && stats.percentile(99) > maxP99Ms) {
+            breaches.add(String.format(Locale.ROOT, "p99 is %.0f ms, the limit is %.0f ms",
+                    stats.percentile(99), maxP99Ms));
+        }
+        if (maxAverageMs > 0 && stats.mean() > maxAverageMs) {
+            breaches.add(String.format(Locale.ROOT, "the average is %.0f ms, the limit is %.0f ms",
+                    stats.mean(), maxAverageMs));
+        }
+
+        AtomResult result = breaches.isEmpty()
+                ? AtomResult.success()
+                : AtomResult.failure("the load test missed its budget: " + String.join("; ", breaches));
+        result = result
                 .data("samples", String.valueOf(stats.samples))
                 .data("errors", String.valueOf(stats.errors))
                 .data("errorPercent", String.format(Locale.ROOT, "%.2f", errorPercent))
@@ -74,12 +94,8 @@ public class JtlReportAtom implements AtomTask {
                 .data("p99Ms", String.format(Locale.ROOT, "%.0f", stats.percentile(99)))
                 .data("maxMs", String.format(Locale.ROOT, "%.0f", stats.max))
                 .report("report", label, dir.toString(), "index.html");
-
-        if (maxErrorPercent > 0 && errorPercent > maxErrorPercent) {
-            return AtomResult.failure(String.format(Locale.ROOT,
-                    "%.2f%% of the samples failed, the limit is %.2f%%", errorPercent, maxErrorPercent))
-                    .data("errorPercent", String.format(Locale.ROOT, "%.2f", errorPercent))
-                    .report("report", label, dir.toString(), "index.html");
+        for (String breach : breaches) {
+            context.log("[jtl] budget missed: " + breach);
         }
         return result;
     }
