@@ -44,13 +44,26 @@ public class JtlReportAtom implements AtomTask {
         }
 
         Stats stats = new Stats();
+        java.util.List<String> unreadable = new java.util.ArrayList<>();
         for (Path file : files) {
-            String text = Files.readString(file, StandardCharsets.UTF_8);
-            if (text.stripLeading().startsWith("<")) {
-                readXml(text, stats);
-            } else {
-                readCsv(text, stats);
+            try {
+                String text = Files.readString(file, StandardCharsets.UTF_8);
+                if (text.stripLeading().startsWith("<")) {
+                    readXml(text, stats);
+                } else {
+                    readCsv(text, stats);
+                }
+            } catch (RuntimeException | java.io.IOException e) {
+                // a half-written .jtl (jmeter killed mid-run) used to be dropped in silence, leaving the
+                // thresholds computed over the samples that happened to parse
+                unreadable.add(file.getFileName() + ": " + e.getMessage());
             }
+        }
+        boolean allowUnreadable = context.getBooleanParam("allowUnreadableReports", false);
+        if (!unreadable.isEmpty() && !allowUnreadable) {
+            return AtomResult.error(ErrorType.USER, 40003,
+                    unreadable.size() + " of " + files.size() + " .jtl file(s) could not be parsed: "
+                            + unreadable.get(0) + " (set allowUnreadableReports=true to accept this)");
         }
         if (stats.samples == 0) {
             return AtomResult.error(ErrorType.USER, 40002, "the .jtl files contain no sample");
@@ -144,8 +157,8 @@ public class JtlReportAtom implements AtomTask {
                 stats.add(sample.getAttribute("lb"), (long) parse(sample.getAttribute("t"), 0),
                         "true".equalsIgnoreCase(sample.getAttribute("s")));
             }
-        } catch (Exception ignored) {
-            // an unreadable file contributes nothing
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage(), e);
         }
     }
 

@@ -67,4 +67,16 @@ grep -q "the average is 200 ms, the limit is 100 ms" "$dir/output.json" || fail 
 printf '{"maxAverageMs": "300", "maxP99Ms": "400", "maxErrorPercent": "5"}' >"$dir/input.json"
 run "$dir" >/dev/null 2>&1 || fail "a met budget must pass: $(cat "$dir/output.json")"
 
-echo "smoke ok: CSV stats, error-rate gate, XML flavour, no report, p99 and average budgets, met budget"
+# a truncated .jtl must not quietly shrink the sample set the gate runs on
+dir="$(mktemp -d)"
+printf 'timeStamp,elapsed,label,success\n1,100,GET /a,true\n2,200,GET /a,true\n' >"$dir/good.jtl"
+# XML jmeter was killed mid-write: the file ends inside a tag
+printf '<?xml version="1.0"?><testResults><httpSample t="100" lt="100" s="true" lb="GET /a"' >"$dir/half.jtl"
+printf '{"pattern": "*.jtl", "maxP99Ms": "5000"}' >"$dir/input.json"
+if run "$dir" >/dev/null 2>&1; then fail "a truncated .jtl must fail the gate"; fi
+grep -q '"errorCode":40003' "$dir/output.json" || fail "expected errorCode 40003: $(cat "$dir/output.json")"
+grep -q 'half.jtl' "$dir/output.json" || fail "the failure must name the file: $(cat "$dir/output.json")"
+printf '{"pattern": "*.jtl", "maxP99Ms": "5000", "allowUnreadableReports": "true"}' >"$dir/input.json"
+run "$dir" >/dev/null 2>&1 || fail "allowUnreadableReports should let it through: $(cat "$dir/output.json")"
+
+echo "smoke ok: CSV stats, error-rate gate, XML flavour, no report, truncated .jtl fails by default, p99 and average budgets, met budget"
