@@ -1,4 +1,4 @@
-# jenkins-atom-jtl-report
+# jenkins-atom-jmeter
 
 JMeter report — port of **performance** (17,470) as an atom.
 

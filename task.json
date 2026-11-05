@@ -1,12 +1,12 @@
 {
-  "atomCode": "jtl-report",
+  "atomCode": "jmeter",
   "name": "JMeter report",
   "version": "1.2.0",
   "description": "Turns a .jtl into latency percentiles and an error rate, per label and overall.",
   "execution": {
-    "packagePath": "jtl-report.jar",
+    "packagePath": "jmeter.jar",
     "language": "java",
-    "target": "$atom_java_path -cp jtl-report.jar com.jenkinschina.atom.sdk.AtomRunner"
+    "target": "$atom_java_path -cp jmeter.jar com.jenkinschina.atom.sdk.AtomRunner"
   },
   "input": {
     "pattern": {

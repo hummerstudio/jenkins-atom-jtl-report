@@ -35,9 +35,9 @@ mkdir -p "$classes/META-INF/services"
 cp src/main/resources/META-INF/services/* "$classes/META-INF/services/"
 ( cd "$sdk" && "$JAR" xf "$SDK_JAR" && rm -rf META-INF/MANIFEST.MF META-INF/services )
 
-rm -rf dist/jtl-report
-mkdir -p dist/jtl-report
-"$JAR" --create --file dist/jtl-report/jtl-report.jar -C "$classes" . -C "$sdk" .
-cp task.json dist/jtl-report/
-[ -f meta.json ] && cp meta.json dist/jtl-report/
-echo "built dist/jtl-report: $(ls dist/jtl-report | tr '\n' ' ')"
+rm -rf dist/jmeter
+mkdir -p dist/jmeter
+"$JAR" --create --file dist/jmeter/jmeter.jar -C "$classes" . -C "$sdk" .
+cp task.json dist/jmeter/
+[ -f meta.json ] && cp meta.json dist/jmeter/
+echo "built dist/jmeter: $(ls dist/jmeter | tr '\n' ' ')"

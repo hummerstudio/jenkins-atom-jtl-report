@@ -5,7 +5,7 @@
   "license": "MIT",
   "tags": [
     "official-port",
-    "jtl-report"
+    "jmeter"
   ],
-  "homepage": "https://github.com/hummerstudio/jenkins-atom-jtl-report"
+  "homepage": "https://github.com/hummerstudio/jenkins-atom-jmeter"
 }

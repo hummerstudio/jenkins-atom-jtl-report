@@ -1,4 +1,4 @@
-package com.jenkinschina.atom.jtlreport;
+package com.jenkinschina.atom.jmeter;
 
 import com.jenkinschina.atom.sdk.AtomContext;
 import com.jenkinschina.atom.sdk.AtomResult;
@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * <p>Reads both the CSV and the XML flavour of the same file. No JMeter needed: the load test has already run, and a
  * report atom that wanted to run it again would be the wrong shape.
  */
-public class JtlReportAtom implements AtomTask {
+public class JmeterAtom implements AtomTask {
 
     @Override
     public AtomResult run(AtomContext context) throws Exception {

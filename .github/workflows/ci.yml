@@ -27,5 +27,5 @@ jobs:
         run: ./tools/smoke.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: jtl-report-atom
-          path: dist/jtl-report/
+          name: jmeter-atom
+          path: dist/jmeter/
